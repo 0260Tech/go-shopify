@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/google/go-querystring/query"
+	"github.com/pkg/errors"
 )
 
 const (
