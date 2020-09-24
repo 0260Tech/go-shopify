@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
@@ -49,7 +50,7 @@ type InventoryItemsResource struct {
 func (s *InventoryItemServiceOp) List(options interface{}) ([]InventoryItem, error) {
 	items, _, err := s.ListWithPagination(options)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error in list subprocess")
 	}
 	return items, nil
 }
@@ -60,13 +61,13 @@ func (s *InventoryItemServiceOp) ListWithPagination(options interface{}) ([]Inve
 
 	headers, err := s.client.createAndDoGetHeaders("GET", path, nil, options, resource)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "error getting resource with headers")
 	}
 	linkHeader := headers.Get("Link")
 
 	pagination, err := extractPagination(linkHeader)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "error getting pagination from link header")
 	}
 
 	return resource.InventoryItems, pagination, err
