@@ -87,7 +87,7 @@ type Client struct {
 	Customer                   CustomerService
 	CustomerAddress            CustomerAddressService
 	Order                      OrderService
-	Fulfillment		   FulfillmentService
+	Fulfillment                FulfillmentService
 	DraftOrder                 DraftOrderService
 	Shop                       ShopService
 	Webhook                    WebhookService
@@ -149,7 +149,7 @@ func (e ResponseError) Error() string {
 		return s
 	}
 
-	return "Unknown Error"
+	return fmt.Sprintf("Unknown Error, Status %d", s.Status)
 }
 
 // ResponseDecodingError occurs when the response body from Shopify could
@@ -590,7 +590,7 @@ func (c *Client) createAndDoGetHeaders(method, relPath string, data, options, re
 	relPath = path.Join(c.pathPrefix, relPath)
 	req, err := c.NewRequest(method, relPath, data, options)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error constructing new request")
 	}
 
 	return c.doGetHeaders(req, resource)
