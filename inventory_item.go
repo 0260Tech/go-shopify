@@ -14,7 +14,7 @@ const inventoryItemsBasePath = "inventory_items"
 // See https://help.shopify.com/en/api/reference/inventory/inventoryitem
 type InventoryItemService interface {
 	List(interface{}) ([]InventoryItem, error)
-	ListWithPagination(interface{}) ([]Order, *Pagination, error)
+	ListWithPagination(interface{}) ([]InventoryItem, *Pagination, error)
 	Get(int64, interface{}) (*InventoryItem, error)
 	Update(InventoryItem) (*InventoryItem, error)
 }
