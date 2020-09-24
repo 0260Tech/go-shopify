@@ -149,7 +149,7 @@ func (e ResponseError) Error() string {
 		return s
 	}
 
-	return fmt.Sprintf("Unknown Error, Status %d", s.Status)
+	return fmt.Sprintf("Unknown Error, Status %d", e.Status)
 }
 
 // ResponseDecodingError occurs when the response body from Shopify could
