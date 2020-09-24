@@ -14,6 +14,7 @@ const inventoryItemsBasePath = "inventory_items"
 // See https://help.shopify.com/en/api/reference/inventory/inventoryitem
 type InventoryItemService interface {
 	List(interface{}) ([]InventoryItem, error)
+	ListWithPagination(interface{}) ([]Order, *Pagination, error)
 	Get(int64, interface{}) (*InventoryItem, error)
 	Update(InventoryItem) (*InventoryItem, error)
 }
@@ -46,10 +47,29 @@ type InventoryItemsResource struct {
 
 // List inventory items
 func (s *InventoryItemServiceOp) List(options interface{}) ([]InventoryItem, error) {
+	items, _, err := s.ListWithPagination(options)
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+func (s *InventoryItemServiceOp) ListWithPagination(options interface{}) ([]InventoryItem, *Pagination, error) {
 	path := fmt.Sprintf("%s.json", inventoryItemsBasePath)
 	resource := new(InventoryItemsResource)
-	err := s.client.Get(path, resource, options)
-	return resource.InventoryItems, err
+
+	headers, err := s.client.createAndDoGetHeaders("GET", path, nil, options, resource)
+	if err != nil {
+		return nil, nil, err
+	}
+	linkHeader := headers.Get("Link")
+
+	pagination, err := extractPagination(linkHeader)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return resource.InventoryItems, pagination, err
 }
 
 // Get a inventory item
