@@ -15,6 +15,7 @@ const variantsResourceName = "variants"
 // See https://help.shopify.com/api/reference/product_variant
 type VariantService interface {
 	List(int64, interface{}) ([]Variant, error)
+	ListWithPagination(int64, interface{}) ([]Variant, *Pagination, error)
 	Count(int64, interface{}) (int, error)
 	Get(int64, interface{}) (*Variant, error)
 	Create(int64, Variant) (*Variant, error)
@@ -75,10 +76,30 @@ type VariantsResource struct {
 
 // List variants
 func (s *VariantServiceOp) List(productID int64, options interface{}) ([]Variant, error) {
+	variants, _, err := s.ListWithPagination(productID, options)
+	if err != nil {
+		return nil, err
+	}
+	return variants, nil
+
+}
+func (s *VariantServiceOp) ListWithPagination(productID int64, options interface{}) ([]Variant, *Pagination, error) {
 	path := fmt.Sprintf("%s/%d/variants.json", productsBasePath, productID)
 	resource := new(VariantsResource)
-	err := s.client.Get(path, resource, options)
-	return resource.Variants, err
+	headers, err := s.client.createAndDoGetHeaders("GET", path, nil, options, resource)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Extract pagination info from header
+	linkHeader := headers.Get("Link")
+
+	pagination, err := extractPagination(linkHeader)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return resource.Variants, pagination, nil
 }
 
 // Count variants
