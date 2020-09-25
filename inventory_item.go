@@ -61,6 +61,7 @@ func (s *InventoryItemServiceOp) ListBatch(variantIDs []int64, options interface
 		idStrs = append(idStrs, fmt.Sprintf("%d", id))
 	}
 	path := fmt.Sprintf("%s.json?ids=%s", inventoryItemsBasePath, strings.Join(idStrs, ","))
+	fmt.Println(path)
 	resource := new(InventoryItemsResource)
 	err := s.client.Get(path, resource, options)
 	return resource.InventoryItems, err
