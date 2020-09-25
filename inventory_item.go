@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
@@ -15,7 +14,6 @@ const inventoryItemsBasePath = "inventory_items"
 // See https://help.shopify.com/en/api/reference/inventory/inventoryitem
 type InventoryItemService interface {
 	List(interface{}) ([]InventoryItem, error)
-	ListWithPagination(interface{}) ([]InventoryItem, *Pagination, error)
 	Get(int64, interface{}) (*InventoryItem, error)
 	Update(InventoryItem) (*InventoryItem, error)
 }
@@ -48,29 +46,10 @@ type InventoryItemsResource struct {
 
 // List inventory items
 func (s *InventoryItemServiceOp) List(options interface{}) ([]InventoryItem, error) {
-	items, _, err := s.ListWithPagination(options)
-	if err != nil {
-		return nil, errors.Wrap(err, "error in list subprocess")
-	}
-	return items, nil
-}
-
-func (s *InventoryItemServiceOp) ListWithPagination(options interface{}) ([]InventoryItem, *Pagination, error) {
 	path := fmt.Sprintf("%s.json", inventoryItemsBasePath)
 	resource := new(InventoryItemsResource)
-
-	headers, err := s.client.createAndDoGetHeaders("GET", path, nil, options, resource)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "error getting resource with headers")
-	}
-	linkHeader := headers.Get("Link")
-
-	pagination, err := extractPagination(linkHeader)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "error getting pagination from link header")
-	}
-
-	return resource.InventoryItems, pagination, err
+	err := s.client.Get(path, resource, options)
+	return resource.InventoryItems, err
 }
 
 // Get a inventory item
